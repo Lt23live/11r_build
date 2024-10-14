@@ -138,6 +138,24 @@
         var arCamera;
         var iTracker;
 
+        // Define the global StartWebCam function
+        window.StartWebCam = async function() {
+            console.log("Global StartWebCam function called");
+            try {
+                await setupCamera();
+                if (unityInstance && typeof unityInstance.SendMessage === 'function') {
+                    unityInstance.SendMessage('ARCamera', 'OnStartWebcamSuccess');
+                    console.log("Webcam start success message sent to Unity");
+                } else {
+                    console.error("Unity instance or SendMessage function not available");
+                    ShowError("Failed to communicate webcam start to Unity. Please try again.");
+                }
+            } catch (error) {
+                console.error("Error in StartWebCam:", error);
+                ShowError("Failed to start webcam. " + error.message);
+            }
+        };
+
         async function initialize() {
             console.log("Initializing...");
             document.getElementById('preloader').style.display = 'flex';
@@ -191,7 +209,6 @@
             try {
                 await iTracker.initialize();
                 console.log("ImageTracker initialized");
-                await setupCamera();
             } catch (error) {
                 console.error("Camera initialization failed:", error);
                 throw new Error("Failed to initialize camera");
@@ -237,13 +254,7 @@
         function startAR() {
             console.log("Starting AR experience...");
             document.getElementById('preloader').style.display = 'none';
-            if (unityInstance && typeof unityInstance.SendMessage === 'function') {
-                unityInstance.SendMessage('ARCamera', 'OnStartWebcamSuccess');
-                console.log("AR experience started");
-            } else {
-                console.error("Unity instance or SendMessage function not available");
-                ShowError("Failed to start AR experience. Unity instance not ready.");
-            }
+            window.StartWebCam(); // Call the global StartWebCam function
         }
 
         function ShowError(error) {
