@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="TemplateData/style.css">
 
     <style>
-        html{
+        html {
             height: -webkit-fill-available;
         }
         body {
@@ -68,6 +68,17 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        #screenshotDiv, #confirmUrlDiv, #errorDiv {
+            display: none;
+        }
+        #errorDiv {
+            background:#aaa;
+        }
+        #errorText {
+            text-align: center;
+            width: 60vw;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -76,7 +87,7 @@
     <video id="webcam-video" muted autoplay playsinline style="width:1px;position:absolute"></video>
     <canvas id="video-canvas" style="width:100%; height:100%; object-fit:cover; position:absolute"></canvas>
     
-    <div id="preloader">
+    <div id="preloader" style="display: none;">
         <div class="loader"></div>
     </div>
     
@@ -85,14 +96,39 @@
         <canvas id="video-canvas"></canvas>
     </div>
     
-    <button id="startButton" style="display: none;">Start Experience</button>
+    <button id="startButton">Start Experience</button>
+
+    <div id="screenshotDiv" class="ctaDiv">
+        <div style="position:relative; background-color:white; padding:10px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.25);">
+            <img id="screenshotImg" src="" alt="screenshot" style="width:80vw; height:80vh">
+            <button onclick="document.getElementById('screenshotDiv').style.display = 'none';" style="position:absolute; transform:translateY(-100%); right:0; top:0">Close</button>
+        </div>
+    </div>
+
+    <div id="confirmUrlDiv" class="ctaDiv">
+        <div style="position:relative; background-color:white; padding:10px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.25); width: 80vw; display:flex; flex-direction: column; align-items: center;">
+            <p id="confirmUrlText" style="text-align: center; width:80%; overflow: hidden; text-overflow: ellipsis;">Are you sure you want to visit url.com?</p>
+            <div>
+                <button onclick="window.open(newUrlString, '_blank').focus(); document.getElementById('confirmUrlDiv').style.display = 'none'">VISIT SITE</button>
+                <button onclick="document.getElementById('confirmUrlDiv').style.display = 'none'">GO BACK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="errorDiv" class="ctaDiv">
+        <p id="errorText"></p>
+    </div>
 
     <script src="arcamera.js" type="text/javascript"></script>
     <script src="itracker.js" type="text/javascript"></script>
     <script src="Build/Ashita_11Rebels.loader.js"></script>
     <script>
         var unityInstance;
-        var initialize = async() => {
+
+        async function initialize() {
+            document.getElementById('preloader').style.display = 'flex';
+            document.getElementById('startButton').style.display = 'none';
+
             var unityCanvas = document.querySelector("#unity-canvas");
             var videoCanvas = document.querySelector("#video-canvas");
             window.arCamera = new ARCamera(unityCanvas, videoCanvas);
@@ -100,20 +136,42 @@
             try {
                 await window.iTracker.initialize();
                 console.log("ImageTracker initialized!");
+                await SetupCamera();
             } catch (error) {
-                console.error("Failed to initialize ImageTracker. Are you missing opencv.js? " + error);
+                console.error("Failed to initialize ImageTracker or camera. " + error);
                 ShowError("Failed to initialize the experience.");
-                return;
             }
-            
-            await LoadWebcams();
-            await RequestWebcam();
         }
-
-        initialize();
 
         var container = document.querySelector("#unity-container");
         var canvas = document.querySelector("#unity-canvas");
+
+        async function SetupCamera() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                const rearCamera = videoDevices.find(device => 
+                    !(device.label.toLowerCase().includes('front') || device.label.toLowerCase().includes('user'))
+                );
+
+                const constraints = {
+                    video: {
+                        deviceId: rearCamera ? { exact: rearCamera.deviceId } : undefined,
+                        facingMode: rearCamera ? undefined : 'environment'
+                    }
+                };
+
+                window.webcamStream = await navigator.mediaDevices.getUserMedia(constraints);
+                const video = document.querySelector("#webcam-video");
+                video.srcObject = window.webcamStream;
+                await arCamera.startWebcam(video);
+                console.log("Webcam started successfully");
+                StartAR();
+            } catch (error) {
+                console.error("Error setting up camera:", error);
+                ShowError("Failed to set up the camera. Please ensure you've granted camera permissions.");
+            }
+        }
 
         function StartAR() {
             canvas.style.width = window.innerWidth + "px";
@@ -133,66 +191,30 @@
             }).then((instance) => {
                 unityInstance = instance;
                 document.getElementById('preloader').style.display = 'none';
-                document.getElementById('startButton').style.display = 'block';
+                unityInstance.SendMessage('ARCamera', 'OnStartWebcamSuccess');
             });
         }
 
-        window.unityFacingMode = "environment";
-
-        window.WEBCAM_SETTINGS = {
-            video: {
-                facingMode: unityFacingMode,
-            },
-            audio: false
-        };
-
-        async function RequestWebcam() {
-            try {
-                window.webcamStream = await navigator.mediaDevices.getUserMedia(window.WEBCAM_SETTINGS);
-                console.log("Webcam access granted");
-                StartWebcam();
-            } catch (err) {
-                console.error("getUserMedia error - ", err);
-                ShowError("Failed to start the experience. Camera permission was denied");
-            }           
-        }
-
-        async function StartWebcam() {
-            if(window.webcamStream) {
-                const video = document.querySelector("#webcam-video");
-                video.srcObject = webcamStream;
-                try {
-                    await arCamera.startWebcam(video);
-                    console.log("Webcam started successfully");
-                    StartAR();
-                } catch(err) {
-                    console.error("Webcam failed to start - ", err);
-                    ShowError("Failed to start the webcam");
-                }   
-            } else {
-                console.error("Webcam failed to start - permission not yet granted");
-                ShowError("Camera permission not granted");
-            }  
-        }
-
-        async function LoadWebcams() {
-            let devices = await navigator.mediaDevices.enumerateDevices();
-            let backCams = devices.filter(device => device.kind === 'videoinput' && !device.label.toLowerCase().includes('front'));
-            
-            if (backCams.length > 0) {
-                window.WEBCAM_SETTINGS.video.deviceId = backCams[0].deviceId;
-            }
-        }
-
         function ShowError(error) {
-            alert(error);
+            document.getElementById("errorDiv").style.display = "flex";
+            document.getElementById("errorText").innerHTML = error;
+        }
+
+        function ShowScreenshot(dataUrl) {
+            document.getElementById("screenshotDiv").style.display = "flex";
+            document.getElementById("screenshotImg").src = dataUrl;
+            document.getElementById("screenshotImg").style.width = "80vw";
+            document.getElementById("screenshotImg").style.height = 80 / window.innerWidth * window.innerHeight + "vw";
+        }
+
+        function ShowConfirmUrl(url) {
+            document.getElementById("confirmUrlDiv").style.display = "flex";
+            window.newUrlString = url;
+            document.getElementById("confirmUrlText").innerText = "Are you sure you want to visit " + url;                
         }
 
         document.getElementById('startButton').addEventListener('click', function() {
-            if (unityInstance) {
-                unityInstance.SendMessage('ARCamera', 'OnStartWebcamSuccess');
-                this.style.display = 'none';
-            }
+            initialize();
         });
 
         window.ITRACKER_GLOBALS = {
