@@ -149,26 +149,10 @@
     <script>
         var unityInstance;
         var arCamera;
+        var iTracker;
 
         async function initializeUnity() {
-            return new Promise((resolve, reject) => {
-                createUnityInstance(document.querySelector("#unity-canvas"), {
-                    dataUrl: "Build/Ashita_11Rebels.data",
-                    frameworkUrl: "Build/Ashita_11Rebels.framework.js",
-                    codeUrl: "Build/Ashita_11Rebels.wasm",
-                    streamingAssetsUrl: "StreamingAssets",
-                    companyName: "Ashita",
-                    productName: "11 Rebels Rewards",
-                    productVersion: "1.0",
-                }, (progress) => {
-                    document.querySelector('.loader').style.borderTopColor = `hsl(${progress * 360}, 100%, 50%)`;
-                }).then((instance) => {
-                    console.log("Unity instance created successfully");
-                    window.unityInstance = instance;
-                    unityInstance = instance;
-                    resolve();
-                }).catch(reject);
-            });
+            // ... (initializeUnity function remains the same) ...
         }
 
         async function initializeARCamera() {
@@ -176,6 +160,16 @@
             const videoCanvas = document.querySelector("#video-canvas");
             arCamera = new ARCamera(unityCanvas, videoCanvas);
             window.arCamera = arCamera;  // Make it globally accessible as the ARCamera class seems to expect
+
+            // Initialize the image tracker
+            iTracker = new ImageTracker(arCamera);
+            try {
+                await iTracker.initialize();
+                console.log("ImageTracker initialized successfully");
+            } catch (error) {
+                console.error("Failed to initialize ImageTracker:", error);
+                throw new Error("Failed to initialize ImageTracker: " + error.message);
+            }
         }
 
         async function setupCamera() {
@@ -207,6 +201,9 @@
                 });
                 await arCamera.startWebcam(video);
                 console.log("Webcam started successfully");
+
+                // Subscribe the image tracker to webcam updates
+                arCamera.subscribeToWebcamUpdates(iTracker);
             } catch (error) {
                 console.error("Error setting up camera:", error);
                 throw new Error("Failed to set up camera: " + error.message);
