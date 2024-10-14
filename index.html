@@ -5,7 +5,6 @@
     <meta name="viewport" content='width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0, user-scalable=no, shrink-to-fit=yes'>
     <title>Unity WebGL Player | 11 Rebels Rewards</title>
     <link rel="stylesheet" href="TemplateData/style.css">
-
     <style>
         html {
             height: -webkit-fill-available;
@@ -152,27 +151,51 @@
         var iTracker;
 
         async function initializeUnity() {
-            // ... (initializeUnity function remains the same) ...
+            return new Promise((resolve, reject) => {
+                createUnityInstance(document.querySelector("#unity-canvas"), {
+                    dataUrl: "Build/Ashita_11Rebels.data",
+                    frameworkUrl: "Build/Ashita_11Rebels.framework.js",
+                    codeUrl: "Build/Ashita_11Rebels.wasm",
+                    streamingAssetsUrl: "StreamingAssets",
+                    companyName: "Ashita",
+                    productName: "11 Rebels Rewards",
+                    productVersion: "1.0",
+                }, (progress) => {
+                    document.querySelector('.loader').style.borderTopColor = `hsl(${progress * 360}, 100%, 50%)`;
+                }).then((instance) => {
+                    console.log("Unity instance created successfully");
+                    window.unityInstance = instance;
+                    unityInstance = instance;
+                    resolve(instance);
+                }).catch(reject);
+            });
         }
 
-        async function initializeARCamera() {
+        async function initializeARCamera(unityInst) {
+            console.log("Initializing AR Camera...");
             const unityCanvas = document.querySelector("#unity-canvas");
             const videoCanvas = document.querySelector("#video-canvas");
-            arCamera = new ARCamera(unityCanvas, videoCanvas);
-            window.arCamera = arCamera;  // Make it globally accessible as the ARCamera class seems to expect
-
-            // Initialize the image tracker
-            iTracker = new ImageTracker(arCamera);
             try {
+                arCamera = new ARCamera(unityCanvas, videoCanvas);
+                window.arCamera = arCamera;
+                console.log("AR Camera initialized successfully");
+
+                iTracker = new ImageTracker(arCamera);
                 await iTracker.initialize();
                 console.log("ImageTracker initialized successfully");
+
+                // Ensure Unity instance is passed to ARCamera if needed
+                if (arCamera.setUnityInstance && typeof arCamera.setUnityInstance === 'function') {
+                    arCamera.setUnityInstance(unityInst);
+                }
             } catch (error) {
-                console.error("Failed to initialize ImageTracker:", error);
-                throw new Error("Failed to initialize ImageTracker: " + error.message);
+                console.error("Failed to initialize AR Camera or ImageTracker:", error);
+                throw new Error("AR initialization failed: " + error.message);
             }
         }
 
         async function setupCamera() {
+            console.log("Setting up camera...");
             const video = document.querySelector("#webcam-video");
             try {
                 const devices = await navigator.mediaDevices.enumerateDevices();
@@ -193,17 +216,29 @@
 
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
-                await new Promise((resolve) => {
+                await new Promise((resolve, reject) => {
                     video.onloadedmetadata = () => {
                         console.log("Video metadata loaded");
                         resolve();
                     };
+                    video.onerror = (error) => {
+                        console.error("Video error:", error);
+                        reject(new Error("Video failed to load: " + error.message));
+                    };
                 });
+
+                await video.play();
+                console.log("Video is playing");
+
+                if (typeof arCamera.startWebcam !== 'function') {
+                    throw new Error("startWebcam method not found on ARCamera");
+                }
+
                 await arCamera.startWebcam(video);
                 console.log("Webcam started successfully");
 
-                // Subscribe the image tracker to webcam updates
                 arCamera.subscribeToWebcamUpdates(iTracker);
+                console.log("Image tracker subscribed to webcam updates");
             } catch (error) {
                 console.error("Error setting up camera:", error);
                 throw new Error("Failed to set up camera: " + error.message);
@@ -215,11 +250,10 @@
             document.getElementById('startButton').style.display = 'none';
 
             try {
-                await initializeUnity();
-                await initializeARCamera();
+                const unityInst = await initializeUnity();
+                await initializeARCamera(unityInst);
                 await setupCamera();
                 console.log("Initialization complete");
-                // Start the AR experience
                 if (typeof window.StartWebCam === 'function') {
                     window.StartWebCam();
                 } else {
@@ -241,17 +275,18 @@
         document.getElementById('startButton').addEventListener('click', initialize);
         document.getElementById('retryButton').addEventListener('click', initialize);
 
-        // This function might be expected by arcamera.js
         window.StartWebCam = function() {
             console.log("StartWebCam called");
             if (unityInstance && typeof unityInstance.SendMessage === 'function') {
                 unityInstance.SendMessage('ARCamera', 'OnStartWebcamSuccess');
+                console.log("OnStartWebcamSuccess message sent to Unity");
             } else {
                 console.warn("Unity instance or SendMessage not available");
             }
         };
 
         function ShowScreenshot(dataUrl) {
+            console.log("ShowScreenshot called with dataUrl:", dataUrl);
             document.getElementById("screenshotDiv").style.display = "flex";
             document.getElementById("screenshotImg").src = dataUrl;
             document.getElementById("screenshotImg").style.width = "80vw";
@@ -259,9 +294,10 @@
         }
 
         function ShowConfirmUrl(url) {
+            console.log("ShowConfirmUrl called with url:", url);
             document.getElementById("confirmUrlDiv").style.display = "flex";
             window.newUrlString = url;
-            document.getElementById("confirmUrlText").innerText = "Are you sure you want to visit " + url;                
+            document.getElementById("confirmUrlText").innerText = "Are you sure you want to visit " + url;
         }
     </script>
 </body>
