@@ -173,7 +173,30 @@
     <script src="arcamera.js" type="text/javascript"></script>
     <script src="itracker.js" type="text/javascript"></script>
     <script src="Build/Ashita_11Rebels.loader.js"></script>
+
     <script>
+        // Checking for Unity load errors
+        (function() {
+            console.log("Diagnostic script running...");
+            
+            if (typeof UnityLoader === 'undefined') {
+                console.error("UnityLoader is not defined. Possible reasons:");
+                console.error("1. Ashita_11Rebels.loader.js failed to load");
+                console.error("2. Ashita_11Rebels.loader.js has an error");
+                console.error("3. Ashita_11Rebels.loader.js is loading asynchronously and hasn't finished yet");
+            } else {
+                console.log("UnityLoader is defined.");
+                console.log("UnityLoader methods:", Object.keys(UnityLoader));
+            }
+            
+            // Check if other Unity-related globals are defined
+            console.log("unityInstance defined:", typeof unityInstance !== 'undefined');
+            console.log("SendMessage defined:", typeof SendMessage !== 'undefined');
+            
+            // Check if the unity-container and unity-canvas elements exist
+            console.log("unity-container exists:", !!document.getElementById('unity-container'));
+            console.log("unity-canvas exists:", !!document.getElementById('unity-canvas'));
+        })();
         var arInstance;
         // Reusable functions to show and hide the loader
         function showLoader(message = "Loading...") {
@@ -184,23 +207,32 @@
             document.getElementById('loader').style.display = 'none';
         }
         function StartAR() {
-            // Show the loader with custom message
             showLoader("Activating AR Viewer...");
-            // Start loading the Unity instance
-            arInstance = UnityLoader.instantiate("unity-canvas", "Build/Ashita_11Rebels.data", {
-                onProgress: function(arInstance, progress) {
-                    showLoader(`Activating AR Viewer... ${Math.round(progress * 100)}%`);
-                    if (progress === 1) {
-                        // Fade out startARDiv when loader is at 100%
-                        fadeOutStartDiv();
-                        // Hide the loader after fading out the startARDiv
-                        setTimeout(hideLoader, 1000);
-                        
-                        document.getElementById('unity-canvas').style.display = 'block';
-                        LoadWebcams(); // Load rear camera after Unity finishes loading
+    
+            if (typeof UnityLoader === 'undefined') {
+                console.error("UnityLoader is not defined. Cannot start AR.");
+                ShowError("Failed to load Unity content. Please refresh the page and try again.");
+                hideLoader();
+                return;
+            }
+            
+            try {
+                arInstance = UnityLoader.instantiate("unity-canvas", "Build/Ashita_11Rebels.data", {
+                    onProgress: function(arInstance, progress) {
+                        showLoader(`Activating AR Viewer... ${Math.round(progress * 100)}%`);
+                        if (progress === 1) {
+                            fadeOutStartDiv();
+                            setTimeout(hideLoader, 1000);
+                            document.getElementById('unity-canvas').style.display = 'block';
+                            LoadWebcams();
+                        }
                     }
-                }
-            });
+                });
+            } catch (error) {
+                console.error("Error instantiating Unity:", error);
+                ShowError("Failed to start AR experience. Please try again later.");
+                hideLoader();
+            }
         }
         function fadeOutStartDiv() {
             // Set the opacity to 0 to trigger the CSS transition
