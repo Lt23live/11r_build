@@ -184,7 +184,6 @@
                 await iTracker.initialize();
                 console.log("ImageTracker initialized successfully");
 
-                // Ensure Unity instance is passed to ARCamera if needed
                 if (arCamera.setUnityInstance && typeof arCamera.setUnityInstance === 'function') {
                     arCamera.setUnityInstance(unityInst);
                 }
@@ -198,18 +197,8 @@
             console.log("Setting up camera...");
             const video = document.querySelector("#webcam-video");
             try {
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter(device => device.kind === 'videoinput');
-                console.log("Available video devices:", videoDevices);
-
-                let rearCamera = videoDevices.find(device => 
-                    !(device.label.toLowerCase().includes('front') || device.label.toLowerCase().includes('user'))
-                );
-
                 const constraints = {
-                    video: rearCamera
-                        ? { deviceId: { exact: rearCamera.deviceId } }
-                        : { facingMode: 'environment' }
+                    video: true  // This will use the system's default camera
                 };
 
                 console.log("Camera constraints:", constraints);
@@ -299,6 +288,33 @@
             window.newUrlString = url;
             document.getElementById("confirmUrlText").innerText = "Are you sure you want to visit " + url;
         }
+
+        // Additional functions that might be needed
+
+        function hideScreenshot() {
+            document.getElementById("screenshotDiv").style.display = "none";
+        }
+
+        function confirmUrl() {
+            window.open(window.newUrlString, '_blank').focus();
+            document.getElementById("confirmUrlDiv").style.display = "none";
+        }
+
+        function cancelUrl() {
+            document.getElementById("confirmUrlDiv").style.display = "none";
+        }
+
+        // Function to handle orientation changes if needed
+        function handleOrientation() {
+            if (arCamera && typeof arCamera.handleOrientation === 'function') {
+                arCamera.handleOrientation();
+            }
+        }
+
+        // Add event listener for orientation changes
+        window.addEventListener('orientationchange', handleOrientation);
+
+
     </script>
 </body>
 </html>
