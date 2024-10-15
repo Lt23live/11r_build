@@ -133,7 +133,7 @@
             align-items: center;
         }
         .no-border {
-            min-height: 25vh;
+            min-height: 30vh;
         }
         .smoke {
             display: flex;
@@ -144,6 +144,11 @@
             overflow: hidden;
             height: 298px;
         }
+        select.hide-camera-select {
+            visibility:hidden;
+            height:0px;
+            width: 0px;
+        }
     </style>
 </head>
 <body>
@@ -153,7 +158,7 @@
     <canvas id="video-canvas" style="width:100%; height:100%; object-fit:cover; position:absolute"></canvas>
     <!-- Reusable Loader -->
     <div id="loader">
-        <p class="white-text" id="loading-text">Loading...</p>
+        <p class="white-text" id="loading-text">11 Rebels AR Experience Loading...</p>
         <div class="spinner"></div>
     </div>
     <!-- AR Start Div -->
@@ -162,8 +167,8 @@
             <img class="animation-top" src="TemplateData/smoke.gif" />
         </div>
         <div class="main-text-box no-border">
-            <select id="chooseCamSel" style="display: none;" onchange="SelectCam()"></select>
-            <p>Step into feudal Japan with the '11 Rebels' AR Experience! Spin the wheel for a chance to win free tickets and immerse yourself in the world of samurai warriors.</p>
+            <select class="hide-camera-select" id="chooseCamSel" style="display: none;" onchange="SelectCam()"></select>
+            <p>Step into feudal Japan with the '11 Rebels' AR Experience! Spin the wheel for a chance to win free tickets and immerse yourself in the world of samurai warriors.</p><p>This augmented reality experience requires access to your device's camera.</p>
             <button class="button button-lg button-black" id="startARButton" onclick="StartAR()"><i class="left-icon" data-feather="video"></i> View Our AR Experience</button>
         </div>
     </div>
