@@ -18,31 +18,154 @@
             width: 100vw;
             overflow: hidden;
         }
+        @font-face {
+            font-family: "San Francisco";
+            font-weight: 600;
+            src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-semibold-webfont.woff");
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000000;
+            color: #ffffff;
+        }
+        p {
+            font-family: 'San Francisco', Arial, sans-serif;
+            font-size: 20px;
+            font-weight: bolder;
+            padding: 15px;
+            color: #f0d057;
+            text-align: center;
+            margin-top: -10px;
+            text-shadow: 1px 0 #050505;
+        }
+        .white-text {
+            color: white;
+            font-size: 18px;
+        }
+        #loader {
+            text-align: center;
+            position: absolute;
+            width: 100%;
+            top: 32vh;
+            z-index: 999;
+            display: none; /* Initially hidden */
+        }
+        .spinner {
+            border: 5px solid #ffffff;
+            border-top: 5px solid #ff0000;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        .button {
+            border-radius: 6px;
+            font-family: 'San Francisco', Arial, sans-serif;
+            transition-duration: 0.4s;
+            cursor: pointer; /* Ensure pointer shows on hover */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .button:hover {
+            background: #dddddd;
+            opacity: 0.9;
+        }
+        .button .feather.left-icon {
+            padding-right: 7px;
+        }
+        .button .feather.right-icon {
+            padding-left: 7px;
+        }
+        .button-black {
+            border: 1px solid #f0d057;
+            background: linear-gradient(#000000,#0D0700,#241500);
+            color: #FDEF9C;
+            text-shadow: 1px 0 #050505;
+        }
+        .button:hover.button-black {
+            background: linear-gradient(#000000,#0D0700,#241500);
+            opacity: 0.9;
+        }
+        .button.button-lg {
+            height: 60px;
+            min-width: 293px;
+            font-size: 18px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Fade-out transition for startARDiv */
         .ctaDiv {
             display: flex;
             flex-direction: column;
+            background-image: url(TemplateData/main_11Rebels-1024x585-fotor-20241013223859.jpg);
+            background-size: auto 105%;
+            background-repeat: no-repeat;
+            background-color: #000000;
+            background-position-x: center;
             align-items: center;
-            justify-content: center;
+            justify-content: end;
             position: absolute;
             left: 0;
             right: 0;
             top: 0;
             bottom: 0;
-            background: #fffa;
-            z-index: 99;
+            z-index: 100; /* Ensuring the div is on top */
+            overflow: hidden;
+            opacity: 1;
+            transition: opacity 1s ease-in-out; /* Fade-out effect */
+        }
+        .main-text-box {
+            min-height: 35vh;
+            background: linear-gradient(#CF0000,#690000);
+            border-top: 2px solid goldenrod;
+            padding: 15px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .no-border {
+            min-height: 25vh;
+        }
+        .smoke {
+            display: flex;
+            align-items: end;
+            justify-content: end;
+            width: 100%;
+            opacity: 0.7;
+            overflow: hidden;
+            height: 298px;
         }
     </style>
 </head>
 <body>
-    <!--IMAGETARGETS-->
 
     <video id="webcam-video" muted autoplay playsinline style="width:1px;position:absolute"></video>
     <!-- <video id="webcam-video" muted autoplay playsinline style="width:100%; height:100%; object-fit:cover; position:absolute"></video> -->
     <canvas id="video-canvas" style="width:100%; height:100%; object-fit:cover; position:absolute"></canvas>
+    <!-- Reusable Loader -->
+    <div id="loader">
+        <p class="white-text" id="loading-text">Loading...</p>
+        <div class="spinner"></div>
+    </div>
+    <!-- AR Start Div -->
     <div id="startARDiv" class="ctaDiv">
-        <select id="chooseCamSel" style="display: none;" onchange="SelectCam()"></select>
-        <p style="text-align: center; width:60vw;">This augmented reality experience requires access to your device's camera</p>
-        <button id="startARButton" onclick="StartAR()" style="display:none">ALLOW ACCESS</button>
+        <div class="smoke">
+            <img class="animation-top" src="TemplateData/smoke.gif" />
+        </div>
+        <div class="main-text-box no-border">
+            <select id="chooseCamSel" style="display: none;" onchange="SelectCam()"></select>
+            <p>Step into feudal Japan with the '11 Rebels' AR Experience! Spin the wheel for a chance to win free tickets and immerse yourself in the world of samurai warriors.</p>
+            <button class="button button-lg button-black" id="startARButton" onclick="StartAR()"><i class="left-icon" data-feather="video"></i> View Our AR Experience</button>
+        </div>
     </div>
     <div id="screenshotDiv" style="display: none;" class="ctaDiv">
         <div style="position:relative; background-color:white; padding:10px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.25);">
