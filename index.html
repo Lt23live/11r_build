@@ -17,6 +17,7 @@
             min-height: -webkit-fill-available;
             width: 100vw;
             overflow: hidden;
+            background: #000000;
         }
         @font-face {
             font-family: "San Francisco";
@@ -28,10 +29,40 @@
             font-size: 20px;
             font-weight: bolder;
             padding: 15px;
+            padding-top: 0px;
+            padding-bottom: 0px;
             color: #f0d057;
             text-align: center;
             margin-top: -10px;
             text-shadow: 1px 0 #050505;
+        }
+        p.sub {
+            font-size: 14px;
+            color: white;
+            font-weight: bold;
+        }
+        form {
+            padding: 15px;
+            padding-top: 0px;
+            width: 85%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        form label {
+            display: block;
+            padding-bottom: 5px;
+            width: 100%;
+        }
+        form button {
+            text-align: center;
+            margin-top: 25px;
+        }
+        form input {
+            width: 100%;
+            height: 40px;
+            border: 2px solid #F4DB86;
         }
         .white-text {
             color: white;
@@ -62,6 +93,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 2;
         }
         .button:hover {
             background: #dddddd;
@@ -97,33 +129,43 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: end;
+            justify-content: center;
             position: absolute;
             left: 0;
             right: 0;
             top: 0;
             bottom: 0;
-            z-index: 100; /* Ensuring the div is on top */
-            overflow: hidden;
-            opacity: 1;
-            transition: opacity 1s ease-in-out; /* Fade-out effect */
+            background: transparent;
+            z-index: 99;
         }
         .ctaDiv p {
             z-index: 1;
         }
         .main-text-box {
-            min-height: 50vh;
             background: linear-gradient(#CF0000,#690000);
             border-top: 2px solid goldenrod;
-            padding: 15px;
+            padding: 0px;
+            padding-bottom: 40px;
             width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
+            position: fixed;
+            bottom: 0;
+            color: white;
+        }
+        .exclaim {
+            font-family: 'San Francisco', Arial, sans-serif;
+            font-size: 22px;
+            font-weight: bolder;
+            padding: 15px;
+            color: #f0d057;
+            text-align: center;
+            text-shadow: 1px 0 #050505;
+            margin-top: 15px;
         }
         .top-border {
-            min-height: 40vh;
+            padding-top: 25px;
         }
         .with-border {
             border: 2px solid goldenrod;
@@ -135,12 +177,16 @@
             position:absolute;
             top: 0;
         }
+        .no-border {
+            border-top: 0px;
+        }
         .gold-border {
-            width: 93%;
+            width: 100vw;
             height: 100%;
-            z-index: 0;
+            z-index: 3;
             position: absolute;
             top: 0;
+            pointer-events: none;
         }
         .smoke {
             display: flex;
@@ -163,6 +209,22 @@
             background-color: #000000;
             background-position-x: center;
         }
+        .more-top {
+            margin-top: 20px;
+        }
+        #trailerViewDiv button {
+            margin-bottom: 50px;
+        }
+        video {
+            margin-bottom: 15px;
+        }
+        @media only screen and (max-width: 600px) {
+                video {
+                width: 100vw; 
+                height: 56.25vw; /* 100/56.25 = 560/315 = 1.778 */
+            
+            }
+        }
     </style>
 </head>
 <body>
@@ -179,27 +241,83 @@
     </div>
     <!-- AR Start Div -->
     <div id="startARDiv" class="ctaDiv w-background">
-        <div class="smoke">
-            <img class="animation-top" src="TemplateData/smoke.gif" />
-        </div>
         <div class="main-text-box top-border">
+            <!--<img class="animation-top" src="TemplateData/smoke.gif" />-->
             <img class="backdrop" src="TemplateData/red-back.png" />
             <select class="hide-camera-select" id="chooseCamSel" onchange="SelectCam()"></select>
             <p>「11人の反逆者」AR体験で戦国時代の日本に足を踏み入れましょう！ホイールを回して、無料チケットを獲得するチャンスを得て、侍の世界に没入してください。</p>
             <button class="button button-lg button-black" id="startARButton" onclick="StartAR()"><i class="left-icon" data-feather="video"></i> AR体験を見る</button>
         </div>
     </div>
-    <div id="formViewDiv" class="ctaDiv" style="display:none">
+    <div id="formViewDiv" class="ctaDiv" style="display: none;">
         <div class="main-text-box no-border">
             <img class="backdrop" src="TemplateData/red-back.png" />
             <img class="gold-border" src="TemplateData/gold_border.png" />
-            <p>Test</p>
+            <div class="exclaim">
+                おめでとうございます
+            </div>
+            <p>
+                あなたは勝ちました
+            </p>
+            <p class="sub">
+                賞品をメールで受け取るために、以下のフォームに記入してください。
+            </p>
+            <form class="prize-form">
+                <label for="fname">名*</label>
+                <input type="text" id="fname" name="fname">
+                <label for="lname">姓*</label>
+                <input type="text" id="lname" name="lname">
+                <label for="email">姓*</label>
+                <input type="email" id="email" name="email">
+                
+                <button class="button button-lg button-black" id="trailerARButton" onclick="submitAR()"><i class="left-icon" data-feather="gift"></i> 賞品を受け取る</button>
+            </form>
         </div>
     </div>
-    <div id="screenshotDiv" class="ctaDiv" style="display: none;" >
-        <div style="position:relative; background-color:white; padding:10px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.25);">
-            <img id="screenshotImg" src="" alt="screenshot" style="width:80vw; height:80vh">
-            <button onclick="document.getElementById('screenshotDiv').style.display = 'none';" style="position:absolute; transform:translateY(-100%); right:0; top:0">Close</button>
+    <div id="trailerViewDiv" class="ctaDiv" style="display: none;">
+        <div class="main-text-box no-border">
+            <img class="backdrop" src="TemplateData/red-back.png" />
+            <img class="gold-border" src="TemplateData/gold_border.png" />
+            <p class="more-top">
+                無料映画チケットの<br>リクエストを受け取りました<br>「11 Rebels」をご覧ください。<br>確認して 5 分でメールします。
+            </p>
+            <p class="sub">
+                「11人の反逆者」の新しいトレーラーをご覧ください
+            </p>
+            <video width="360" height="200" controls>
+                <source src="https://rebels-backend-firebase-server.web.app/videos/trailer.mp4" type="video/mp4">
+            </video>
+            <button class="button button-lg button-black" id="exitARButton" onclick="exitAR()"><i class="left-icon" data-feather="x-square"></i> AR体験を終了する</button>
+        </div>
+    </div>
+    <div id="failedViewDiv" class="ctaDiv" style="display: none;">
+        <div class="main-text-box no-border">
+            <img class="backdrop" src="TemplateData/red-back.png" />
+            <img class="gold-border" src="TemplateData/gold_border.png" />
+            <p class="more-top">
+                次回はもっと運が良いかも！
+            </p>
+            <p class="sub">
+                賞品はありませんが、「11人の反逆者」<br>の新しいトレーラーをご覧ください！
+            </p>
+            <video width="360" height="200" controls>
+                <source src="https://rebels-backend-firebase-server.web.app/videos/trailer.mp4" type="video/mp4">
+            </video>
+            <button class="button button-lg button-black" id="exitARButton" onclick="exitAR()"><i class="left-icon" data-feather="x-square"></i> AR体験を終了する</button>
+        </div>
+    </div>
+    <div id="retryViewDiv" class="ctaDiv" style="display: none;">
+        <div class="main-text-box no-border">
+            <img class="backdrop" src="TemplateData/red-back.png" />
+            <img class="gold-border" src="TemplateData/gold_border.png" />
+            <p class="more-top">
+                再挑戦
+            </p>
+            <p class="sub">
+                賞品はありませんが、<br>もう一度チャンスがあります。
+            </p>
+            
+            <button class="button button-lg button-black" id="exitARButton" onclick="retryAR()"><i class="left-icon" data-feather="rotate-ccw"></i> 再挑戦</button>
         </div>
     </div>
     <div id="confirmUrlDiv" class="ctaDiv" style="display: none;">
@@ -256,7 +374,7 @@
 				return;
 			}
             await LoadWebcams();
-            document.getElementById("startARButton").style.display = "block";
+            document.getElementById("startARButton").style.display = "flex";
         }
         initialize();
         var container = document.querySelector("#unity-container");
@@ -265,10 +383,11 @@
         var progressBarFull = document.querySelector("#unity-progress-bar-full");
         function StartAR() {
             canvas.style.width = window.innerWidth + "px";
-            canvas.style.height = window.innerHeight + "px";
-            document.getElementById('startARDiv').style.display = 'none';
-            createUnityInstance(document.querySelector("#unity-canvas"), {
-                dataUrl: "Build/Ashita_11Rebels.data",
+                canvas.style.height = window.innerHeight + "px";
+                
+                document.getElementById("startARDiv").style.display = "none";
+                createUnityInstance(document.querySelector("#unity-canvas"), {
+                    dataUrl: "Build/Ashita_11Rebels.data",
                     frameworkUrl: "Build/Ashita_11Rebels.framework.js",
                     codeUrl: "Build/Ashita_11Rebels.wasm",
                     streamingAssetsUrl: "StreamingAssets",
@@ -283,13 +402,11 @@
                         progressBarFull.style.width = 100 * progress + "%";
                     }
                 ).then((unityInstance) => {
-                window.unityInstance = unityInstance;
-                RequestWebcam();
-                loadingBar.style.display = "none";
-            });
-            StartMotionSensors();
-            //Call Start GPS here --> StartGPS();
-            loadingBar.style.display = "block";
+                    window.unityInstance = unityInstance;
+                    RequestWebcam();
+                    loadingBar.style.display = "none";
+                });
+                loadingBar.style.display = "block";
         }
         //Set Facing Mode here ('environment', 'user', '')
 		window.unityFacingMode = "environment"
@@ -437,6 +554,24 @@
             document.getElementById("screenshotImg").style.width = "80vw";
             document.getElementById("screenshotImg").style.height = 80 / window.innerWidth * window.innerHeight + "vw";
         }
+        function ShowForm() {
+            var select = document.getElementById("formViewDiv");
+            select.style.display = "block";
+        }
+        function ShowTrailer() {
+            var select = document.getElementById("trailerViewDiv");
+            select.style.display = "block";
+        }
+        function ShowBetterLuckNextTime() {
+            var select = document.getElementById("failedViewDiv");
+            select.style.display = "block";
+        }
+        function ShowRetry() {
+            var select = document.getElementById("retryViewDiv");
+            select.style.display = "block";
+        }
+        //Feather Icons loader
+        feather.replace();
     </script>
 </body>
 </html>
