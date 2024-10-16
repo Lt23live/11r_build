@@ -243,7 +243,7 @@
         <div class="spinner"></div>
     </div>
     <!-- AR Start Div -->
-    <div id="startARDiv" class="ctaDiv w-background" style="display:none">
+    <div id="startARDiv" class="ctaDiv w-background">
         <div class="smoke">
             <img class="animation-top" src="TemplateData/smoke.gif" />
         </div>
@@ -309,7 +309,7 @@
             <button class="button button-lg button-black" id="exitARButton" onclick="exitAR()"><i class="left-icon" data-feather="x-square"></i> AR体験を終了する</button>
         </div>
     </div>
-    <div id="retryViewDiv" class="ctaDiv">
+    <div id="retryViewDiv" class="ctaDiv" style="display: none;">
         <div class="main-text-box no-border">
             <img class="backdrop" src="TemplateData/red-back.png" />
             <img class="gold-border" src="TemplateData/gold_border.png" />
@@ -606,7 +606,6 @@
             var select = document.getElementById("retryViewDiv");
             select.style.display = "block";
         }
-        function 
         //Feather Icons loader
         feather.replace();
     </script>
