@@ -215,11 +215,11 @@
         #trailerViewDiv button {
             margin-bottom: 50px;
         }
-        iframe {
+        video {
             margin-bottom: 15px;
         }
         @media only screen and (max-width: 600px) {
-                iframe {
+                video {
                 width: 100vw; 
                 height: 56.25vw; /* 100/56.25 = 560/315 = 1.778 */
             
@@ -241,10 +241,8 @@
     </div>
     <!-- AR Start Div -->
     <div id="startARDiv" class="ctaDiv w-background">
-        <div class="smoke">
-            <img class="animation-top" src="TemplateData/smoke.gif" />
-        </div>
         <div class="main-text-box top-border">
+            <!--<img class="animation-top" src="TemplateData/smoke.gif" />-->
             <img class="backdrop" src="TemplateData/red-back.png" />
             <select class="hide-camera-select" id="chooseCamSel" onchange="SelectCam()"></select>
             <p>「11人の反逆者」AR体験で戦国時代の日本に足を踏み入れましょう！ホイールを回して、無料チケットを獲得するチャンスを得て、侍の世界に没入してください。</p>
@@ -286,7 +284,9 @@
             <p class="sub">
                 「11人の反逆者」の新しいトレーラーをご覧ください
             </p>
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/-zXwJ5NOTSw?si=jlmK9VovBkSd9-Qv" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <video width="360" height="200" controls>
+                <source src="https://rebels-backend-firebase-server.web.app/videos/trailer.mp4" type="video/mp4">
+            </video>
             <button class="button button-lg button-black" id="exitARButton" onclick="exitAR()"><i class="left-icon" data-feather="x-square"></i> AR体験を終了する</button>
         </div>
     </div>
@@ -300,7 +300,9 @@
             <p class="sub">
                 賞品はありませんが、「11人の反逆者」<br>の新しいトレーラーをご覧ください！
             </p>
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/-zXwJ5NOTSw?si=jlmK9VovBkSd9-Qv" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <video width="360" height="200" controls>
+                <source src="https://rebels-backend-firebase-server.web.app/videos/trailer.mp4" type="video/mp4">
+            </video>
             <button class="button button-lg button-black" id="exitARButton" onclick="exitAR()"><i class="left-icon" data-feather="x-square"></i> AR体験を終了する</button>
         </div>
     </div>
@@ -315,7 +317,7 @@
                 賞品はありませんが、<br>もう一度チャンスがあります。
             </p>
             
-            <button class="button button-lg button-black" id="exitARButton" onclick="retryAR()"><i class="left-icon" data-feather="rotate-ccw"></i> 再挑戦</button>
+            <button class="button button-lg button-black" id="retryARButton" onclick="retryAR()"><i class="left-icon" data-feather="rotate-ccw"></i> 再挑戦</button>
         </div>
     </div>
     <div id="confirmUrlDiv" class="ctaDiv" style="display: none;">
@@ -381,10 +383,11 @@
         var progressBarFull = document.querySelector("#unity-progress-bar-full");
         function StartAR() {
             canvas.style.width = window.innerWidth + "px";
-            canvas.style.height = window.innerHeight + "px";
-            document.getElementById('startARDiv').style.display = 'none';
-            createUnityInstance(document.querySelector("#unity-canvas"), {
-                dataUrl: "Build/Ashita_11Rebels.data",
+                canvas.style.height = window.innerHeight + "px";
+                
+                document.getElementById("startARDiv").style.display = "none";
+                createUnityInstance(document.querySelector("#unity-canvas"), {
+                    dataUrl: "Build/Ashita_11Rebels.data",
                     frameworkUrl: "Build/Ashita_11Rebels.framework.js",
                     codeUrl: "Build/Ashita_11Rebels.wasm",
                     streamingAssetsUrl: "StreamingAssets",
@@ -399,13 +402,11 @@
                         progressBarFull.style.width = 100 * progress + "%";
                     }
                 ).then((unityInstance) => {
-                window.unityInstance = unityInstance;
-                RequestWebcam();
-                loadingBar.style.display = "none";
-            });
-            StartMotionSensors();
-            //Call Start GPS here --> StartGPS();
-            loadingBar.style.display = "block";
+                    window.unityInstance = unityInstance;
+                    RequestWebcam();
+                    loadingBar.style.display = "none";
+                });
+                loadingBar.style.display = "block";
         }
         //Set Facing Mode here ('environment', 'user', '')
 		window.unityFacingMode = "environment"
@@ -569,6 +570,14 @@
             var select = document.getElementById("retryViewDiv");
             select.style.display = "block";
         }
+		function retryAR() {
+			if (window.unityInstance) {
+				// Call the Retry function in the StageMain.cs script in Unity
+				window.unityInstance.SendMessage('StageMain', 'Retry');
+			} else {
+				console.error("Unity instance not initialized.");
+			}
+		}
         //Feather Icons loader
         feather.replace();
     </script>
