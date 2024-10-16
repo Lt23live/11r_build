@@ -6,6 +6,7 @@
     <title>Unity WebGL Player | 11 Rebels Rewards</title>
     <script src="https://unpkg.com/feather-icons"></script>
     <link rel="stylesheet" href="TemplateData/style.css">
+
     <style>
         html{
             height: -webkit-fill-available;
@@ -17,6 +18,7 @@
             min-height: -webkit-fill-available;
             width: 100vw;
             overflow: hidden;
+            background: #000000;
         }
         @font-face {
             font-family: "San Francisco";
@@ -28,10 +30,40 @@
             font-size: 20px;
             font-weight: bolder;
             padding: 15px;
+            padding-top: 0px;
+            padding-bottom: 0px;
             color: #f0d057;
             text-align: center;
             margin-top: -10px;
             text-shadow: 1px 0 #050505;
+        }
+        p.sub {
+            font-size: 14px;
+            color: white;
+            font-weight: bold;
+        }
+        form {
+            padding: 15px;
+            padding-top: 0px;
+            width: 85%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        form label {
+            display: block;
+            padding-bottom: 5px;
+            width: 100%;
+        }
+        form button {
+            text-align: center;
+            margin-top: 25px;
+        }
+        form input {
+            width: 100%;
+            height: 40px;
+            border: 2px solid #F4DB86;
         }
         .white-text {
             color: white;
@@ -62,6 +94,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 2;
         }
         .button:hover {
             background: #dddddd;
@@ -97,33 +130,45 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: end;
+            justify-content: center;
             position: absolute;
             left: 0;
             right: 0;
             top: 0;
             bottom: 0;
-            z-index: 100; /* Ensuring the div is on top */
-            overflow: hidden;
-            opacity: 1;
-            transition: opacity 1s ease-in-out; /* Fade-out effect */
+            background: transparent;
+            z-index: 99;
         }
         .ctaDiv p {
             z-index: 1;
         }
         .main-text-box {
-            min-height: 50vh;
+            min-height: 35vh;
             background: linear-gradient(#CF0000,#690000);
             border-top: 2px solid goldenrod;
-            padding: 15px;
+            padding: 0px;
+            padding-bottom: 40px;
             width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
+            position: fixed;
+            bottom: 0;
+            color: white;
+        }
+        .exclaim {
+            font-family: 'San Francisco', Arial, sans-serif;
+            font-size: 22px;
+            font-weight: bolder;
+            padding: 15px;
+            color: #f0d057;
+            text-align: center;
+            text-shadow: 1px 0 #050505;
+            margin-top: 15px;
         }
         .top-border {
             min-height: 40vh;
+            padding-top: 25px;
         }
         .with-border {
             border: 2px solid goldenrod;
@@ -135,12 +180,16 @@
             position:absolute;
             top: 0;
         }
+        .no-border {
+            border-top: 0px;
+        }
         .gold-border {
-            width: 93%;
+            width: 100vw;
             height: 100%;
-            z-index: 0;
+            z-index: 3;
             position: absolute;
             top: 0;
+            pointer-events: none;
         }
         .smoke {
             display: flex;
@@ -163,12 +212,28 @@
             background-color: #000000;
             background-position-x: center;
         }
+        .more-top {
+            margin-top: 20px;
+        }
+
+        #trailerViewDiv button {
+            margin-bottom: 50px;
+        }
+
+        iframe {
+            margin-bottom: 15px;
+        }
+        @media only screen and (max-width: 600px) {
+                iframe {
+                width: 100vw; 
+                height: 56.25vw; /* 100/56.25 = 560/315 = 1.778 */
+            
+            }
+        }
     </style>
 </head>
 <body>
     <!--IMAGETARGETS-->
-		<imagetarget id='rebels' src='targets/logo.png'></imagetarget>
-
     <video id="webcam-video" muted autoplay playsinline style="width:1px;position:absolute"></video>
     <!-- <video id="webcam-video" muted autoplay playsinline style="width:100%; height:100%; object-fit:cover; position:absolute"></video> -->
     <canvas id="video-canvas" style="width:100%; height:100%; object-fit:cover; position:absolute"></canvas>
@@ -178,7 +243,7 @@
         <div class="spinner"></div>
     </div>
     <!-- AR Start Div -->
-    <div id="startARDiv" class="ctaDiv w-background">
+    <div id="startARDiv" class="ctaDiv w-background" style="display:none">
         <div class="smoke">
             <img class="animation-top" src="TemplateData/smoke.gif" />
         </div>
@@ -189,19 +254,76 @@
             <button class="button button-lg button-black" id="startARButton" onclick="StartAR()"><i class="left-icon" data-feather="video"></i> AR体験を見る</button>
         </div>
     </div>
-    <div id="formViewDiv" class="ctaDiv" style="display:none">
+    <div id="formViewDiv" class="ctaDiv" style="display: none;">
         <div class="main-text-box no-border">
             <img class="backdrop" src="TemplateData/red-back.png" />
             <img class="gold-border" src="TemplateData/gold_border.png" />
-            <p>Test</p>
+            <div class="exclaim">
+                おめでとうございます
+            </div>
+            <p>
+                あなたは勝ちました
+            </p>
+            <p class="sub">
+                賞品をメールで受け取るために、以下のフォームに記入してください。
+            </p>
+            <form class="prize-form">
+                <label for="fname">名*</label>
+                <input type="text" id="fname" name="fname">
+
+                <label for="lname">姓*</label>
+                <input type="text" id="lname" name="lname">
+
+                <label for="email">姓*</label>
+                <input type="email" id="email" name="email">
+                
+                <button class="button button-lg button-black" id="trailerARButton" onclick="submitAR()"><i class="left-icon" data-feather="gift"></i> 賞品を受け取る</button>
+            </form>
         </div>
     </div>
-    <div id="screenshotDiv" class="ctaDiv" style="display: none;" >
-        <div style="position:relative; background-color:white; padding:10px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.25);">
-            <img id="screenshotImg" src="" alt="screenshot" style="width:80vw; height:80vh">
-            <button onclick="document.getElementById('screenshotDiv').style.display = 'none';" style="position:absolute; transform:translateY(-100%); right:0; top:0">Close</button>
+    <div id="trailerViewDiv" class="ctaDiv" style="display: none;">
+        <div class="main-text-box no-border">
+            <img class="backdrop" src="TemplateData/red-back.png" />
+            <img class="gold-border" src="TemplateData/gold_border.png" />
+            <p class="more-top">
+                無料映画チケットの<br>リクエストを受け取りました<br>「11 Rebels」をご覧ください。<br>確認して 5 分でメールします。
+            </p>
+            <p class="sub">
+                「11人の反逆者」の新しいトレーラーをご覧ください
+            </p>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/-zXwJ5NOTSw?si=jlmK9VovBkSd9-Qv" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <button class="button button-lg button-black" id="exitARButton" onclick="exitAR()"><i class="left-icon" data-feather="x-square"></i> AR体験を終了する</button>
         </div>
     </div>
+    <div id="failedViewDiv" class="ctaDiv" style="display: none;">
+        <div class="main-text-box no-border">
+            <img class="backdrop" src="TemplateData/red-back.png" />
+            <img class="gold-border" src="TemplateData/gold_border.png" />
+            <p class="more-top">
+                次回はもっと運が良いかも！
+            </p>
+            <p class="sub">
+                賞品はありませんが、「11人の反逆者」<br>の新しいトレーラーをご覧ください！
+            </p>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/-zXwJ5NOTSw?si=jlmK9VovBkSd9-Qv" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <button class="button button-lg button-black" id="exitARButton" onclick="exitAR()"><i class="left-icon" data-feather="x-square"></i> AR体験を終了する</button>
+        </div>
+    </div>
+    <div id="retryViewDiv" class="ctaDiv">
+        <div class="main-text-box no-border">
+            <img class="backdrop" src="TemplateData/red-back.png" />
+            <img class="gold-border" src="TemplateData/gold_border.png" />
+            <p class="more-top">
+                再挑戦
+            </p>
+            <p class="sub">
+                賞品はありませんが、<br>もう一度チャンスがあります。
+            </p>
+            
+            <button class="button button-lg button-black" id="exitARButton" onclick="retryAR()"><i class="left-icon" data-feather="rotate-ccw"></i> 再挑戦</button>
+        </div>
+    </div>
+
     <div id="confirmUrlDiv" class="ctaDiv" style="display: none;">
         <div style="position:relative; background-color:white; padding:10px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.25); width: 80vw; display:flex; flex-direction: column; align-items: center;">
             <p id="confirmUrlText" style="text-align: center; width:80%; overflow: hidden; text-overflow: ellipsis;">Are you sure you want to visit url.com?</p>
@@ -233,6 +355,7 @@
             var unityCanvas = document.querySelector("#unity-canvas");
             var videoCanvas = document.querySelector("#video-canvas");
             window.arCamera = new ARCamera(unityCanvas, videoCanvas);
+
             //WORLD TRACKER
             window.wTracker = new WorldTracker(arCamera);
             try{
@@ -244,6 +367,7 @@
                 ShowError("Failed to initialize the World Tracker.\n" + error);
                 return;
             }
+
 			//IMAGE TRACKER
 			window.iTracker = new ImageTracker(arCamera);
 			try {
@@ -255,10 +379,14 @@
 				ShowError("Failed to initialize the Image Tracker.\n" + error);
 				return;
 			}
+
             await LoadWebcams();
-            document.getElementById("startARButton").style.display = "block";
+            document.getElementById("startARButton").style.display = "flex";
         }
+
         initialize();
+
+
         var container = document.querySelector("#unity-container");
         var canvas = document.querySelector("#unity-canvas");
         var loadingBar = document.querySelector("#unity-loading-bar");
@@ -266,6 +394,7 @@
         function StartAR() {
             canvas.style.width = window.innerWidth + "px";
             canvas.style.height = window.innerHeight + "px";
+
             document.getElementById('startARDiv').style.display = 'none';
             createUnityInstance(document.querySelector("#unity-canvas"), {
                 dataUrl: "Build/Ashita_11Rebels.data",
@@ -288,11 +417,17 @@
                 loadingBar.style.display = "none";
             });
             StartMotionSensors();
+
             //Call Start GPS here --> StartGPS();
+
+
+
             loadingBar.style.display = "block";
         }
+
         //Set Facing Mode here ('environment', 'user', '')
-		window.unityFacingMode = "environment"
+        window.unityFacingMode = "environment";
+
         window.WEBCAM_SETTINGS = {
             video: {
                 facingMode: unityFacingMode,
@@ -305,6 +440,7 @@
             try{
                 window.webcamStream = await navigator.mediaDevices.getUserMedia(window.WEBCAM_SETTINGS);
                 arCamera.setFlipped(window.WEBCAM_SETTINGS.video.facingMode == 'user');
+
                 console.log("Webcam access granted");
                 requestingForCameraPermission = false;
             }
@@ -317,12 +453,15 @@
         }
         async function StartWebcam(){
             console.log("StartWebcam")
+
             while (window.requestingForCameraPermission) {
                 // Wait until requestingForCameraPermission becomes true.
                 console.log("Waiting for permissions...");
                 await new Promise(resolve => setTimeout(resolve, 100)); // Adjust the delay time as needed.
             }
+
             console.log("Got Permissions");
+
             if(window.webcamStream)
             {
                 const video = document.querySelector("#webcam-video");
@@ -330,6 +469,7 @@
                 try {
                     await arCamera.startWebcam(video);
                     console.log("Webcam started successfully");
+
                     window.unityInstance.SendMessage('ARCamera', 'OnStartWebcamSuccess');
                 }
                 catch(err){
@@ -342,12 +482,14 @@
                 window.unityInstance.SendMessage('ARCamera', 'OnStartWebcamFail');
             }
         }
+
         async function LoadWebcams(){
             let camDevices = [];
             let devices = await navigator.mediaDevices.enumerateDevices();
             var ctr = 0;
             devices.forEach(mediaDevice => {
                 if (mediaDevice.kind === 'videoinput') {
+
                     if(window.unityFacingMode == 'environment' && !mediaDevice.label.includes('facing front')){
                         //back cam only
                         camDevices.push(mediaDevice);
@@ -361,6 +503,7 @@
                         camDevices.push(mediaDevice);
                         console.log('pushed', mediaDevice);
                     }
+
                     ctr++;
                 }
             });
@@ -391,9 +534,11 @@
             //console.log(window.WEBCAM_SETTINGS);
             wTracker.WEBCAM_NAME = select.options[select.selectedIndex].innerHTML;
         }
+
         async function FlipCam(){
             arCamera.stopWebcam();
             window.WEBCAM_SETTINGS.video.deviceId = '';
+
             if(window.WEBCAM_SETTINGS.video.facingMode == 'user'){
                  window.WEBCAM_SETTINGS.video.facingMode = 'environment';
                 arCamera.setFlipped(false);
@@ -403,10 +548,13 @@
                 arCamera.setFlipped(true);
             }
             window.webcamStream = await navigator.mediaDevices.getUserMedia(window.WEBCAM_SETTINGS);
+
             const video = document.querySelector("#webcam-video");
             video.srcObject = webcamStream;
+
             await arCamera.startWebcam(video);
         }
+
         function StartMotionSensors(){
             window.wTracker.startAngles()
             .then(()=>{
@@ -415,8 +563,10 @@
             .catch(error=>{
                 console.error("Failed to start motion sensors - " + error);
                 ShowError("Failed to start the experience. " + error);
+
             });
         }
+
         function StartGPS(){
             window.wTracker.startGPS()
             .then((pos)=>{
@@ -427,16 +577,38 @@
                 //ShowError("Failed to start GPS " + error);
             });
         }
+
+
         function ShowError(error){
             document.getElementById("errorDiv").style.display = "flex";
             document.getElementById("errorText").innerHTML = error;
         }
+
         function ShowScreenshot(dataUrl){
             document.getElementById("screenshotDiv").style.display = "flex";
             document.getElementById("screenshotImg").src = dataUrl;
             document.getElementById("screenshotImg").style.width = "80vw";
             document.getElementById("screenshotImg").style.height = 80 / window.innerWidth * window.innerHeight + "vw";
         }
+        function ShowForm() {
+            var select = document.getElementById("formViewDiv");
+            select.style.display = "block";
+        }
+        function ShowTrailer() {
+            var select = document.getElementById("trailerViewDiv");
+            select.style.display = "block";
+        }
+        function ShowBetterLuckNextTime() {
+            var select = document.getElementById("failedViewDiv");
+            select.style.display = "block";
+        }
+        function ShowRetry() {
+            var select = document.getElementById("retryViewDiv");
+            select.style.display = "block";
+        }
+        function 
+        //Feather Icons loader
+        feather.replace();
     </script>
 </body>
 </html>
