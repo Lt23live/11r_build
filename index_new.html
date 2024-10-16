@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content='width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0, user-scalable=no, shrink-to-fit=yes'>
+    <title>Unity WebGL Player | 11 Rebels Rewards</title>
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <!-- Feathers Icon loader-->
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        @font-face {
+            font-family: "San Francisco";
+            font-weight: 600;
+            src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-semibold-webfont.woff");
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000000;
+            color: #ffffff;
+        }
+        p {
+            font-family: 'San Francisco', Arial, sans-serif;
+            font-size: 20px;
+            font-weight: bolder;
+            padding: 15px;
+            color: #f0d057;
+            text-align: center;
+            margin-top: -10px;
+            text-shadow: 1px 0 #050505;
+        }
+        .white-text {
+            color: white;
+            font-size: 18px;
+        }
+        #loader {
+            text-align: center;
+            position: absolute;
+            width: 100%;
+            top: 32vh;
+            z-index: 999;
+            display: none; /* Initially hidden */
+        }
+        .spinner {
+            border: 5px solid #ffffff;
+            border-top: 5px solid #ff0000;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        .button {
+            border-radius: 6px;
+            font-family: 'San Francisco', Arial, sans-serif;
+            transition-duration: 0.4s;
+            cursor: pointer; /* Ensure pointer shows on hover */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .button:hover {
+            background: #dddddd;
+            opacity: 0.9;
+        }
+        .button .feather.left-icon {
+            padding-right: 7px;
+        }
+        .button .feather.right-icon {
+            padding-left: 7px;
+        }
+        .button-black {
+            border: 1px solid #f0d057;
+            background: linear-gradient(#000000,#0D0700,#241500);
+            color: #FDEF9C;
+            text-shadow: 1px 0 #050505;
+        }
+        .button:hover.button-black {
+            background: linear-gradient(#000000,#0D0700,#241500);
+            opacity: 0.9;
+        }
+        .button.button-lg {
+            height: 60px;
+            min-width: 293px;
+            font-size: 18px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Fade-out transition for startARDiv */
+        .ctaDiv {
+            display: flex;
+            flex-direction: column;
+            background-image: url(TemplateData/main_11Rebels-1024x585-fotor-20241013223859.jpg);
+            background-size: auto 105%;
+            background-repeat: no-repeat;
+            background-color: #000000;
+            background-position-x: center;
+            align-items: center;
+            justify-content: end;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 100; /* Ensuring the div is on top */
+            overflow: hidden;
+            opacity: 1;
+            transition: opacity 1s ease-in-out; /* Fade-out effect */
+        }
+        .main-text-box {
+            min-height: 35vh;
+            background: linear-gradient(#CF0000,#690000);
+            border-top: 2px solid goldenrod;
+            padding: 15px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .no-border {
+            min-height: 25vh;
+        }
+        .smoke {
+            display: flex;
+            align-items: end;
+            justify-content: end;
+            width: 100%;
+            opacity: 0.7;
+            overflow: hidden;
+            height: 298px;
+        }
+    </style>
+</head>
+<body>
+    <div id="unity-container" class="unity-mobile">
+        <canvas id="unity-canvas" style="display:none;"></canvas>
+        <!-- Reusable Loader -->
+        <div id="loader">
+            <p class="white-text" id="loading-text">Loading...</p>
+            <div class="spinner"></div>
+        </div>
+        <!-- AR Start Div -->
+        <div id="startARDiv" class="ctaDiv">
+            <div class="smoke">
+                <img class="animation-top" src="TemplateData/smoke.gif" />
+            </div>
+            <div class="main-text-box no-border">
+                <p>Step into feudal Japan with the '11 Rebels' AR Experience! Spin the wheel for a chance to win free tickets and immerse yourself in the world of samurai warriors.</p>
+                <button class="button button-lg button-black" id="startARButton" onclick="StartAR()"><i class="left-icon" data-feather="video"></i> View Our AR Experience</button>
+            </div>
+        </div>
+        <!-- Confirm URL Div -->
+        <div id="confirmUrlDiv" style="display: none;" class="ctaDiv">
+            <div style="position:relative; background-color:white; padding:10px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.25); width: 80vw; display:flex; flex-direction: column; align-items: center;">
+                <p id="confirmUrlText" style="text-align: center; width:80%; overflow: hidden; text-overflow: ellipsis;">Are you sure you want to visit url.com?</p>
+                <div>
+                    <button onclick="window.open(newUrlString, '_blank').focus(); document.getElementById('confirmUrlDiv').style.display = 'none'">VISIT SITE</button>
+                    <button onclick="document.getElementById('confirmUrlDiv').style.display = 'none'">GO BACK</button>
+                </div>
+            </div>
+        </div>
+        <!-- Error Div -->
+        <div id="errorDiv" class="ctaDiv" style="display: none; background:#aaaaaa";>
+            <p id="errorText" style="text-align: center; width:60vw; color:white"></p>
+        </div>
+    </div>
+    <!-- Scripts -->
+    <script src="arcamera.js" type="text/javascript"></script>
+    <script src="itracker.js" type="text/javascript"></script>
+    <script src="Build/Ashita_11Rebels.loader.js"></script>
+
+    <script>
+        // Checking for Unity load errors
+        (function() {
+            console.log("Diagnostic script running...");
+            
+            if (typeof UnityLoader === 'undefined') {
+                console.error("UnityLoader is not defined. Possible reasons:");
+                console.error("1. Ashita_11Rebels.loader.js failed to load");
+                console.error("2. Ashita_11Rebels.loader.js has an error");
+                console.error("3. Ashita_11Rebels.loader.js is loading asynchronously and hasn't finished yet");
+            } else {
+                console.log("UnityLoader is defined.");
+                console.log("UnityLoader methods:", Object.keys(UnityLoader));
+            }
+            
+            // Check if other Unity-related globals are defined
+            console.log("unityInstance defined:", typeof unityInstance !== 'undefined');
+            console.log("SendMessage defined:", typeof SendMessage !== 'undefined');
+            
+            // Check if the unity-container and unity-canvas elements exist
+            console.log("unity-container exists:", !!document.getElementById('unity-container'));
+            console.log("unity-canvas exists:", !!document.getElementById('unity-canvas'));
+        })();
+        var arInstance;
+        // Reusable functions to show and hide the loader
+        function showLoader(message = "Loading...") {
+            document.getElementById('loading-text').textContent = message;
+            document.getElementById('loader').style.display = 'block';
+        }
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+        }
+        function StartAR() {
+            showLoader("Activating AR Viewer...");
+    
+            if (typeof UnityLoader === 'undefined') {
+                console.error("UnityLoader is not defined. Cannot start AR.");
+                ShowError("Failed to load Unity content. Please refresh the page and try again.");
+                hideLoader();
+                return;
+            }
+            
+            try {
+                arInstance = UnityLoader.instantiate("unity-canvas", "Build/Ashita_11Rebels.data", {
+                    onProgress: function(arInstance, progress) {
+                        showLoader(`Activating AR Viewer... ${Math.round(progress * 100)}%`);
+                        if (progress === 1) {
+                            fadeOutStartDiv();
+                            setTimeout(hideLoader, 1000);
+                            document.getElementById('unity-canvas').style.display = 'block';
+                            LoadWebcams();
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error instantiating Unity:", error);
+                ShowError("Failed to start AR experience. Please try again later.");
+                hideLoader();
+            }
+        }
+        function fadeOutStartDiv() {
+            // Set the opacity to 0 to trigger the CSS transition
+            document.getElementById('startARDiv').style.opacity = 0;
+            // Wait for the transition to finish, then completely hide the element
+            setTimeout(function() {
+                document.getElementById('startARDiv').style.display = 'none';
+            }, 1000); // Duration of the fade-out transition (1 second)
+        }
+        function LoadWebcams() {
+            showLoader("Accessing rear camera...");
+            const videoConstraints = {
+                video: {
+                    facingMode: { exact: "environment" }, // Requests the rear camera
+                },
+                audio: false
+            };
+            navigator.mediaDevices.getUserMedia(videoConstraints)
+                .then(function(stream) {
+                    const video = document.querySelector("#webcam-video");
+                    video.srcObject = stream;
+                    arCamera.startWebcam(video); // Assuming arCamera manages the webcam
+                    console.log("Rear camera started successfully.");
+                    hideLoader(); // Hide loader after webcam starts successfully
+                })
+                .catch(function(err) {
+                    console.error("Error accessing the rear camera: ", err);
+                    ShowError("Failed to access the rear camera.");
+                    hideLoader(); // Hide loader even if there's an error
+                });
+        }
+        function ShowError(message) {
+            document.getElementById("errorDiv").style.display = 'flex';
+            document.getElementById("errorText").innerText = message;
+        }
+        // Feather icon loader
+        feather.replace();
+    </script>
+</body>
+</html>
