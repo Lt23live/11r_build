@@ -2,9 +2,11 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content='width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes'>
+    <meta name="viewport" content='width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0, user-scalable=no, shrink-to-fit=yes'>
     <title>Unity WebGL Player | 11 Rebels Rewards</title>
+    <script src="https://unpkg.com/feather-icons"></script>
     <link rel="stylesheet" href="TemplateData/style.css">
+
     <style>
         html{
             height: -webkit-fill-available;
@@ -17,43 +19,203 @@
             width: 100vw;
             overflow: hidden;
         }
+        @font-face {
+            font-family: "San Francisco";
+            font-weight: 600;
+            src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-semibold-webfont.woff");
+        }
+        p {
+            font-family: 'San Francisco', Arial, sans-serif;
+            font-size: 20px;
+            font-weight: bolder;
+            padding: 15px;
+            color: #f0d057;
+            text-align: center;
+            margin-top: -10px;
+            text-shadow: 1px 0 #050505;
+        }
+        .white-text {
+            color: white;
+            font-size: 18px;
+        }
+        #loader {
+            text-align: center;
+            position: absolute;
+            width: 100%;
+            top: 32vh;
+            z-index: 999;
+            display: none; /* Initially hidden */
+        }
+        .spinner {
+            border: 5px solid #ffffff;
+            border-top: 5px solid #ff0000;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        .button {
+            border-radius: 6px;
+            font-family: 'San Francisco', Arial, sans-serif;
+            transition-duration: 0.4s;
+            cursor: pointer; /* Ensure pointer shows on hover */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .button:hover {
+            background: #dddddd;
+            opacity: 0.9;
+        }
+        .button .feather.left-icon {
+            padding-right: 7px;
+        }
+        .button .feather.right-icon {
+            padding-left: 7px;
+        }
+        .button-black {
+            border: 1px solid #f0d057;
+            background: linear-gradient(#000000,#0D0700,#241500);
+            color: #FDEF9C;
+            text-shadow: 1px 0 #050505;
+        }
+        .button:hover.button-black {
+            background: linear-gradient(#000000,#0D0700,#241500);
+            opacity: 0.9;
+        }
+        .button.button-lg {
+            height: 60px;
+            min-width: 293px;
+            font-size: 18px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Fade-out transition for startARDiv */
         .ctaDiv {
             display: flex;
             flex-direction: column;
+
             align-items: center;
-            justify-content: center;
+            justify-content: end;
             position: absolute;
             left: 0;
             right: 0;
             top: 0;
             bottom: 0;
-            background: #fffa;
-            z-index: 99;
+            z-index: 100; /* Ensuring the div is on top */
+            overflow: hidden;
+            opacity: 1;
+            transition: opacity 1s ease-in-out; /* Fade-out effect */
+        }
+        .ctaDiv p {
+            z-index: 1;
+        }
+        .main-text-box {
+            min-height: 50vh;
+            background: linear-gradient(#CF0000,#690000);
+            border-top: 2px solid goldenrod;
+            padding: 15px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .top-border {
+            min-height: 40vh;
+        }
+        .with-border {
+            border: 2px solid goldenrod;
+        }
+        .backdrop {
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            position:absolute;
+            top: 0;
+        }
+        .gold-border {
+            width: 93%;
+            height: 100%;
+            z-index: 0;
+            position: absolute;
+            top: 0;
+        }
+        .smoke {
+            display: flex;
+            align-items: end;
+            justify-content: end;
+            width: 100%;
+            opacity: 0.7;
+            overflow: hidden;
+            height: 298px;
+        }
+        select.hide-camera-select {
+            visibility:hidden;
+            height:0px;
+            width: 0px;
+        }
+        .w-background {
+            background-image: url(TemplateData/main_11Rebels-1024x585-fotor-20241013223859.jpg);
+            background-size: auto 105%;
+            background-repeat: no-repeat;
+            background-color: #000000;
+            background-position-x: center;
         }
     </style>
 </head>
 <body>
     <!--IMAGETARGETS-->
-		<imagetarget id='rebels' src='targets/logo.png'></imagetarget>
-
     <video id="webcam-video" muted autoplay playsinline style="width:1px;position:absolute"></video>
+    <!-- <video id="webcam-video" muted autoplay playsinline style="width:100%; height:100%; object-fit:cover; position:absolute"></video> -->
     <canvas id="video-canvas" style="width:100%; height:100%; object-fit:cover; position:absolute"></canvas>
-    <div id="startARDiv" class="ctaDiv">
-        <select id="chooseCamSel" style="display: none;" onchange="SelectCam()"></select>
-        <p style="text-align: center; width:60vw">This augmented reality experience requires access to your device's camera and motion sensors</p>
-        <button id="startARButton" style="display:none" onclick="StartAR()">ALLOW ACCESS</button>
+    <!-- Reusable Loader -->
+    <div id="loader">
+        <p class="white-text" id="loading-text">ARビューアを起動中...</p>
+        <div class="spinner"></div>
     </div>
-    <div id="screenshotDiv" style="display: none;" class="ctaDiv">
+    <!-- AR Start Div -->
+    <div id="startARDiv" class="ctaDiv w-background">
+        <div class="smoke">
+            <img class="animation-top" src="TemplateData/smoke.gif" />
+        </div>
+        <div class="main-text-box top-border">
+            <img class="backdrop" src="TemplateData/red-back.png" />
+            <select class="hide-camera-select" id="chooseCamSel" onchange="SelectCam()"></select>
+            <p>「11人の反逆者」AR体験で戦国時代の日本に足を踏み入れましょう！ホイールを回して、無料チケットを獲得するチャンスを得て、侍の世界に没入してください。</p>
+            <button class="button button-lg button-black" id="startARButton" onclick="StartAR()"><i class="left-icon" data-feather="video"></i> AR体験を見る</button>
+        </div>
+    </div>
+    <div id="formViewDiv" class="ctaDiv" style="display:none">
+        <div class="main-text-box no-border">
+            <img class="backdrop" src="TemplateData/red-back.png" />
+            <img class="gold-border" src="TemplateData/gold_border.png" />
+            <p>Test</p>
+        </div>
+    </div>
+    <div id="screenshotDiv" class="ctaDiv" style="display: none;" >
         <div style="position:relative; background-color:white; padding:10px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.25);">
             <img id="screenshotImg" src="" alt="screenshot" style="width:80vw; height:80vh">
             <button onclick="document.getElementById('screenshotDiv').style.display = 'none';" style="position:absolute; transform:translateY(-100%); right:0; top:0">Close</button>
+        </div>
+    </div>
+    <div id="confirmUrlDiv" class="ctaDiv" style="display: none;">
+        <div style="position:relative; background-color:white; padding:10px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.25); width: 80vw; display:flex; flex-direction: column; align-items: center;">
+            <p id="confirmUrlText" style="text-align: center; width:80%; overflow: hidden; text-overflow: ellipsis;">Are you sure you want to visit url.com?</p>
+            <div>
+                <button onclick="window.open(newUrlString, '_blank').focus(); document.getElementById('confirmUrlDiv').style.display = 'none'">VISIT SITE</button>
+                <button onclick="document.getElementById('confirmUrlDiv').style.display = 'none'">GO BACK</button>
+            </div>
         </div>
     </div>
     <div id="errorDiv" class="ctaDiv" style="display: none; background:#aaa">
         <p id="errorText" style="text-align: center; width:60vw; color:white"></p>
     </div>
     <div id="unity-container" class="unity-mobile">
-        <canvas id="unity-canvas" style="width: 100%; height: 100%; background: #0000; z-index: -99;"></canvas>
+        <canvas id="unity-canvas" style="width: 100%; height: 100%; background: #0000; z-index: -99"></canvas>
         <div id="unity-loading-bar">
             <div id="unity-logo"></div>
             <div id="unity-progress-bar-empty">
@@ -71,6 +233,7 @@
             var unityCanvas = document.querySelector("#unity-canvas");
             var videoCanvas = document.querySelector("#video-canvas");
             window.arCamera = new ARCamera(unityCanvas, videoCanvas);
+
             //WORLD TRACKER
             window.wTracker = new WorldTracker(arCamera);
             try{
@@ -82,6 +245,7 @@
                 ShowError("Failed to initialize the World Tracker.\n" + error);
                 return;
             }
+
 			//IMAGE TRACKER
 			window.iTracker = new ImageTracker(arCamera);
 			try {
@@ -93,10 +257,14 @@
 				ShowError("Failed to initialize the Image Tracker.\n" + error);
 				return;
 			}
+
             await LoadWebcams();
             document.getElementById("startARButton").style.display = "block";
         }
+
         initialize();
+
+
         var container = document.querySelector("#unity-container");
         var canvas = document.querySelector("#unity-canvas");
         var loadingBar = document.querySelector("#unity-loading-bar");
@@ -104,9 +272,10 @@
         function StartAR() {
             canvas.style.width = window.innerWidth + "px";
             canvas.style.height = window.innerHeight + "px";
+
             document.getElementById('startARDiv').style.display = 'none';
             createUnityInstance(document.querySelector("#unity-canvas"), {
-                    dataUrl: "Build/Ashita_11Rebels.data",
+                dataUrl: "Build/Ashita_11Rebels.data",
                     frameworkUrl: "Build/Ashita_11Rebels.framework.js",
                     codeUrl: "Build/Ashita_11Rebels.wasm",
                     streamingAssetsUrl: "StreamingAssets",
@@ -126,11 +295,17 @@
                 loadingBar.style.display = "none";
             });
             StartMotionSensors();
+
             //Call Start GPS here --> StartGPS();
+
+
+
             loadingBar.style.display = "block";
         }
+
         //Set Facing Mode here ('environment', 'user', '')
-		window.unityFacingMode = "environment"
+        window.unityFacingMode = "environment";
+
         window.WEBCAM_SETTINGS = {
             video: {
                 facingMode: unityFacingMode,
@@ -143,6 +318,7 @@
             try{
                 window.webcamStream = await navigator.mediaDevices.getUserMedia(window.WEBCAM_SETTINGS);
                 arCamera.setFlipped(window.WEBCAM_SETTINGS.video.facingMode == 'user');
+
                 console.log("Webcam access granted");
                 requestingForCameraPermission = false;
             }
@@ -155,12 +331,15 @@
         }
         async function StartWebcam(){
             console.log("StartWebcam")
+
             while (window.requestingForCameraPermission) {
                 // Wait until requestingForCameraPermission becomes true.
                 console.log("Waiting for permissions...");
                 await new Promise(resolve => setTimeout(resolve, 100)); // Adjust the delay time as needed.
             }
+
             console.log("Got Permissions");
+
             if(window.webcamStream)
             {
                 const video = document.querySelector("#webcam-video");
@@ -168,6 +347,7 @@
                 try {
                     await arCamera.startWebcam(video);
                     console.log("Webcam started successfully");
+
                     window.unityInstance.SendMessage('ARCamera', 'OnStartWebcamSuccess');
                 }
                 catch(err){
@@ -180,12 +360,14 @@
                 window.unityInstance.SendMessage('ARCamera', 'OnStartWebcamFail');
             }
         }
+
         async function LoadWebcams(){
             let camDevices = [];
             let devices = await navigator.mediaDevices.enumerateDevices();
             var ctr = 0;
             devices.forEach(mediaDevice => {
                 if (mediaDevice.kind === 'videoinput') {
+
                     if(window.unityFacingMode == 'environment' && !mediaDevice.label.includes('facing front')){
                         //back cam only
                         camDevices.push(mediaDevice);
@@ -199,6 +381,7 @@
                         camDevices.push(mediaDevice);
                         console.log('pushed', mediaDevice);
                     }
+
                     ctr++;
                 }
             });
@@ -229,9 +412,11 @@
             //console.log(window.WEBCAM_SETTINGS);
             wTracker.WEBCAM_NAME = select.options[select.selectedIndex].innerHTML;
         }
+
         async function FlipCam(){
             arCamera.stopWebcam();
             window.WEBCAM_SETTINGS.video.deviceId = '';
+
             if(window.WEBCAM_SETTINGS.video.facingMode == 'user'){
                  window.WEBCAM_SETTINGS.video.facingMode = 'environment';
                 arCamera.setFlipped(false);
@@ -241,10 +426,13 @@
                 arCamera.setFlipped(true);
             }
             window.webcamStream = await navigator.mediaDevices.getUserMedia(window.WEBCAM_SETTINGS);
+
             const video = document.querySelector("#webcam-video");
             video.srcObject = webcamStream;
+
             await arCamera.startWebcam(video);
         }
+
         function StartMotionSensors(){
             window.wTracker.startAngles()
             .then(()=>{
@@ -253,8 +441,10 @@
             .catch(error=>{
                 console.error("Failed to start motion sensors - " + error);
                 ShowError("Failed to start the experience. " + error);
+
             });
         }
+
         function StartGPS(){
             window.wTracker.startGPS()
             .then((pos)=>{
@@ -265,16 +455,20 @@
                 //ShowError("Failed to start GPS " + error);
             });
         }
+
+
         function ShowError(error){
             document.getElementById("errorDiv").style.display = "flex";
             document.getElementById("errorText").innerHTML = error;
         }
+
         function ShowScreenshot(dataUrl){
             document.getElementById("screenshotDiv").style.display = "flex";
             document.getElementById("screenshotImg").src = dataUrl;
             document.getElementById("screenshotImg").style.width = "80vw";
             document.getElementById("screenshotImg").style.height = 80 / window.innerWidth * window.innerHeight + "vw";
         }
+
     </script>
 </body>
 </html>
