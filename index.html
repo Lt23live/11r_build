@@ -225,6 +225,29 @@
             
             }
         }
+        /* Style for invalid inputs */
+        input:invalid {
+        border-color: red !important;
+        }
+        /* Optional: Style the label as well */
+        label[for]:invalid { 
+        color: red;
+        }
+        /* Style for error messages */
+        .error {
+        color: red;
+        font-size: 0.9em;
+        margin-top: 5px; 
+        }
+        /* Style for the form container */
+        #formContainer {
+        /* Add any styles you want for the form container */
+        }
+        /* Style for the success message */
+        #successMessage {
+        display: none; /* Initially hidden */
+        /* Add any styles you want for the success message */
+        }
     </style>
 </head>
 <body>
@@ -262,16 +285,33 @@
             <p class="sub">
                 賞品をメールで受け取るために、以下のフォームに記入してください。
             </p>
-            <form class="prize-form">
-                <label for="fname">名*</label>
-                <input type="text" id="fname" name="fname">
-                <label for="lname">姓*</label>
-                <input type="text" id="lname" name="lname">
-                <label for="email">姓*</label>
-                <input type="email" id="email" name="email">
-                
-                <button class="button button-lg button-black" id="trailerARButton" onclick="submitAR()"><i class="left-icon" data-feather="gift"></i> 賞品を受け取る</button>
-            </form>
+            <div id="formContainer"> 
+                <form id="emailForm" class="prize-form">
+                  <div>
+                    <label for="fName">名*</label>
+                    <input type="text" id="fName" name="fName" required>
+                    <span class="error" id="fNameError"></span> 
+                  </div>
+            
+                  <div>
+                    <label for="lName">姓*</label>
+                    <input type="text" id="lName" name="lName" required>
+                    <span class="error" id="lNameError"></span> 
+                  </div>
+            
+                  <div>
+                    <label for="email">姓*</label>
+                    <input type="email" id="email" name="email" required>
+                    <span class="error" id="emailError"></span> 
+                  </div>
+                  <button class="button button-lg button-black" id="submitButton" type="submit"><i class="left-icon" data-feather="gift"></i> 賞品を受け取る</button>
+                </form>
+            </div>
+            
+            <div id="successMessage" style="display: none;"> 
+                <h2>Thank you!</h2>
+            </div>
+            <p id="result"></p>
         </div>
     </div>
     <div id="trailerViewDiv" class="ctaDiv" style="display: none;">
@@ -287,7 +327,7 @@
             <video width="360" height="200" controls>
                 <source src="https://rebels-backend-firebase-server.web.app/videos/trailer.mp4" type="video/mp4">
             </video>
-            <button class="button button-lg button-black" id="exitARButton" onclick="exitAR()"><i class="left-icon" data-feather="x-square"></i> AR体験を終了する</button>
+            <button class="button button-lg button-black" id="exitARButton" onclick="exitAR('https://www.koeitecmo.co.jp/e/')"><i class="left-icon" data-feather="x-square"></i> AR体験を終了する</button>
         </div>
     </div>
     <div id="failedViewDiv" class="ctaDiv" style="display: none;">
@@ -303,7 +343,7 @@
             <video width="360" height="200" controls>
                 <source src="https://rebels-backend-firebase-server.web.app/videos/trailer.mp4" type="video/mp4">
             </video>
-            <button class="button button-lg button-black" id="exitARButton" onclick="exitAR()"><i class="left-icon" data-feather="x-square"></i> AR体験を終了する</button>
+            <button class="button button-lg button-black" id="exitARButton" onclick="exitAR('https://www.koeitecmo.co.jp/e/')"><i class="left-icon" data-feather="x-square"></i> AR体験を終了する</button>
         </div>
     </div>
     <div id="retryViewDiv" class="ctaDiv" style="display: none;">
@@ -322,7 +362,7 @@
     </div>
     <div id="confirmUrlDiv" class="ctaDiv" style="display: none;">
         <div style="position:relative; background-color:white; padding:10px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.25); width: 80vw; display:flex; flex-direction: column; align-items: center;">
-            <p id="confirmUrlText" style="text-align: center; width:80%; overflow: hidden; text-overflow: ellipsis;">Are you sure you want to visit url.com?</p>
+            <p id="confirmUrlText" style="text-align: center; width:80%; overflow: hidden; text-overflow: ellipsis;">Are you sure you want to exit AR Experience</p>
             <div>
                 <button onclick="window.open(newUrlString, '_blank').focus(); document.getElementById('confirmUrlDiv').style.display = 'none'">VISIT SITE</button>
                 <button onclick="document.getElementById('confirmUrlDiv').style.display = 'none'">GO BACK</button>
@@ -578,8 +618,62 @@
 				console.error("Unity instance not initialized.");
 			}
 		}
+        function submitAR () {
+            var select = document.getElementById("formViewDiv");
+            select.style.display = "none";
+            var select = document.getElementById("trailerViewDiv");
+            select.style.display = "block";
+        }
+        function exitAR(url) {
+            window.location.href = url;
+        }
         //Feather Icons loader
         feather.replace();
+        //Form Validation 
+        document.getElementById("emailForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            // Basic validation (using 'required' attribute) 
+            if (!event.target.checkValidity()) {
+                return; // Stop submission if any required field is empty
+            }
+            // Get form values
+            const fName = document.getElementById("fName").value;
+            const lName = document.getElementById("lName").value;
+            const email = document.getElementById("email").value;   
+            // Hardcoded prize value
+            const prize = "20_percent_off"; 
+            // Create a data object to send to the email API
+            const data = {
+                fName: fName,
+                lName: lName,
+                email: email,
+                prize: prize
+            };
+            try {
+                // Make a POST request to the email API endpoint
+                const response = await fetch("https://us-central1-rebels-backend-firebase-server.cloudfunctions.net/sendEmail", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+                });
+                // Parse the response from the API
+                const result = await response.json();
+                if (response.ok) {
+                document.getElementById("result").textContent = "Email sent successfully!";
+                // Hide the form container
+                document.getElementById("formViewDiv").style.display = "none";
+                // Show the trailer page
+                document.getElementById("trailerViewDiv").style.display = "block"; 
+                } else {
+                document.getElementById("result").textContent = "Error: " + result.message;
+                }
+            } catch (error) {
+                console.error("Error sending email:", error);
+                document.getElementById("result").textContent = "Error: Unable to send email.";
+            }
+        });
     </script>
 </body>
 </html>
